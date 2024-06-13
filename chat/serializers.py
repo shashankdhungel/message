@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from chat.models import Chatroom
+from chat.models import Chatroom, Message
 
 class ChatRoomSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,5 +9,5 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['id','name']
+        fields = ['id', 'text', 'chatroom', 'user']
         
