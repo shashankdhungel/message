@@ -11,3 +11,4 @@ class ChatRoomViewSets(viewsets.ModelViewSet):
 class MessageViewSets(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     queryset = Message.objects.all()
+
