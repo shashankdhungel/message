@@ -1,37 +1,50 @@
-# tests.py
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
-from django.urls import reverse
 from .models import Chatroom
 from .serializers import ChatRoomSerializer
+from django.urls import reverse
 
-class ChatRoomViewSetTestCase(TestCase):
+
+class ChatRoomViewSetTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Set up data for the whole TestCase
+        cls.chatroom1 = Chatroom.objects.create(name='Test Room 1')
+        cls.chatroom2 = Chatroom.objects.create(name='Test Room 2')
+
     def setUp(self):
         self.client = APIClient()
-        self.chatroom_data = {'name': 'Test Room'}
-        self.chatroom = Chatroom.objects.create(name='Existing Room')
+
+    def test_list_chatrooms(self):
+        response = self.client.get(reverse('chatroom-list'))
+        chatrooms = Chatroom.objects.all()
+        serializer = ChatRoomSerializer(chatrooms, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
 
     def test_create_chatroom(self):
-        response = self.client.post(reverse('chatroom-list'), self.chatroom_data, format='json')
+        data = {'name': 'New Test Room'}
+        response = self.client.post(reverse('chatroom-list'), data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Chatroom.objects.count(), 2)  # 1 from setUp and 1 from this test
-        self.assertEqual(Chatroom.objects.get(id=response.data['id']).name, 'Test Room')
+        self.assertEqual(Chatroom.objects.count(), 3)
+        self.assertEqual(Chatroom.objects.get(id=response.data['id']).name, 'New Test Room')
 
-    def test_get_chatroom(self):
-        response = self.client.get(reverse('chatroom-detail', kwargs={'pk': self.chatroom.pk}))
+    def test_retrieve_chatroom(self):
+        response = self.client.get(reverse('chatroom-detail', kwargs={'pk': self.chatroom1.pk}))
+        chatroom = Chatroom.objects.get(pk=self.chatroom1.pk)
+        serializer = ChatRoomSerializer(chatroom)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.chatroom.name)
+        self.assertEqual(response.data, serializer.data)
 
     def test_update_chatroom(self):
-        updated_data = {'name': 'Updated Room'}
-        response = self.client.put(reverse('chatroom-detail', kwargs={'pk': self.chatroom.pk}), updated_data, format='json')
+        data = {'name': 'Updated Test Room'}
+        response = self.client.put(reverse('chatroom-detail', kwargs={'pk': self.chatroom1.pk}), data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.chatroom.refresh_from_db()
-        self.assertEqual(self.chatroom.name, 'Updated Room')
+        self.chatroom1.refresh_from_db()
+        self.assertEqual(self.chatroom1.name, 'Updated Test Room')
 
     def test_delete_chatroom(self):
-        response = self.client.delete(reverse('chatroom-detail', kwargs={'pk': self.chatroom.pk}))
+        response = self.client.delete(reverse('chatroom-detail', kwargs={'pk': self.chatroom1.pk}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Chatroom.objects.count(), 0)
-
+        self.assertEqual(Chatroom.objects.count(), 1)
