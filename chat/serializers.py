@@ -14,6 +14,11 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = ['id', 'text', 'chatroom', 'user']
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField()
     email = serializers.CharField()

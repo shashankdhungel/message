@@ -4,6 +4,7 @@ from rest_framework import status
 from .models import Chatroom
 from .serializers import ChatRoomSerializer
 from django.urls import reverse
+from django.contrib.auth.models import User
 
 from .views import sumNumbers
 
@@ -12,10 +13,12 @@ class ChatRoomViewSetTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         # Set up data for the whole TestCase
+        cls.user = User.objects.create_user(username='testuser', password='testpassword')
         cls.chatroom1 = Chatroom.objects.create(name='Test Room 1')
         cls.chatroom2 = Chatroom.objects.create(name='Test Room 2')
 
     def setUp(self):
+        self.client.login(username='testuser', password='testpassword')
         self.client = APIClient()
 
     def test_list_chatrooms(self):
